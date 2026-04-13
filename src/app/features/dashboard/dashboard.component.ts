@@ -1,0 +1,178 @@
+import { Component, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
+const barData = [400,300,200,500,600,800,450,350,550,400,900,400,300,600,700,500,400,300,450,250,500];
+const labels  = Array.from({length:21},(_,i)=>`${String(i+1).padStart(2,'0')} Jan`);
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [RouterLink, CommonModule],
+  template: `
+<div>
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Tableau de bord</h2>
+      <p class="page-sub" style="font-style:italic">Bienvenue, Jean. Voici vos performances des 30 derniers jours.</p>
+    </div>
+    <a routerLink="/campaigns/new" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle Campagne
+    </a>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <span class="kpi-trend up">↑ +5%</span>
+      </div>
+      <div class="kpi-label">Campagnes Actives</div>
+      <div class="kpi-value">12</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg></div>
+        <span class="kpi-trend up">↑ +12%</span>
+      </div>
+      <div class="kpi-label">Emails ce mois</div>
+      <div class="kpi-value">45,200</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <span class="kpi-trend down">↓ -2%</span>
+      </div>
+      <div class="kpi-label">Taux d'ouverture</div>
+      <div class="kpi-value">24.5%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <span class="kpi-trend up">↑ +8%</span>
+      </div>
+      <div class="kpi-label">Contacts Actifs</div>
+      <div class="kpi-value">8,902</div>
+    </div>
+  </div>
+
+  <!-- Chart + Quota -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+    <div class="card" style="padding:2rem">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem">
+        <div>
+          <h4 style="font-size:1.125rem;font-weight:700;font-family:var(--font-headline)">Activité des emails</h4>
+          <p style="font-size:.75rem;color:var(--color-on-surface-variant);font-weight:500">Volume d'envoi quotidien sur 30 jours</p>
+        </div>
+        <a routerLink="/reports" style="font-size:.75rem;font-weight:700;color:var(--color-primary)">Voir le rapport</a>
+      </div>
+      <canvas #barChart style="max-height:280px"></canvas>
+    </div>
+    <div style="background:var(--color-primary);border-radius:.75rem;padding:2rem;color:var(--color-on-primary);display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 24px rgba(0,74,198,.25)">
+      <div>
+        <h4 style="font-size:1.125rem;font-weight:700;font-family:var(--font-headline);margin-bottom:.25rem">Quota mensuel</h4>
+        <p style="opacity:.7;font-size:.875rem">Vous approchez de votre limite</p>
+        <div style="margin-top:2.5rem">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:.5rem">
+            <span style="font-size:2.5rem;font-weight:900;font-family:var(--font-headline)">75%</span>
+            <span style="font-size:.75rem;opacity:.6">75k / 100k</span>
+          </div>
+          <div style="background:rgba(255,255,255,.2);border-radius:9999px;height:.75rem;overflow:hidden">
+            <div style="width:75%;height:100%;background:#fff;border-radius:9999px"></div>
+          </div>
+        </div>
+      </div>
+      <button style="background:#fff;color:var(--color-primary);border:none;border-radius:.5rem;padding:.75rem;font-weight:700;font-size:.875rem;cursor:pointer;margin-top:2rem">Passer à l'offre Pro</button>
+    </div>
+  </div>
+
+  <!-- Campaigns table -->
+  <div class="card" style="overflow:hidden;margin-bottom:1.5rem">
+    <div style="padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between">
+      <h4 style="font-size:1.125rem;font-weight:700;font-family:var(--font-headline)">Dernières Campagnes</h4>
+      <a routerLink="/campaigns" style="font-size:.75rem;font-weight:700;color:var(--color-primary)">Voir tout</a>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Campagne</th><th>Statut</th><th>Progression</th><th style="text-align:right">Actions</th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let c of campaigns">
+            <td><div style="display:flex;align-items:center;gap:.75rem">
+              <div style="width:2.5rem;height:2.5rem;background:var(--color-surface-container);border-radius:.5rem;display:flex;align-items:center;justify-content:center;color:var(--color-on-surface-variant)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:.875rem">{{c.name}}</div>
+                <div style="font-size:.6875rem;color:var(--color-on-surface-variant)">{{c.date}}</div>
+              </div>
+            </div></td>
+            <td><span class="badge" [ngClass]="c.badgeClass">{{c.statusLabel}}</span></td>
+            <td>
+              <div style="width:12rem">
+                <div style="display:flex;justify-content:space-between;font-size:.625rem;font-weight:700;margin-bottom:.25rem">
+                  <span style="color:var(--color-on-surface-variant)">{{c.progress}}% complété</span>
+                  <span>{{c.sent}} / {{c.total}}</span>
+                </div>
+                <div class="prog-track"><div class="prog-fill" [style.width]="c.progress+'%'" [style.background]="c.progress===100 ? 'var(--color-on-surface-variant)' : 'var(--color-primary)'"></div></div>
+              </div>
+            </td>
+            <td style="text-align:right">
+              <button class="btn btn-icon btn-secondary" style="display:inline-flex">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Live feed -->
+  <div class="terminal">
+    <div class="terminal-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      Live Delivery Feed
+    </div>
+    <div class="log-line"><span class="ts">12:45:01</span> [SMTP] Success: email_id_7721 sent to domain &#64;gmail.com</div>
+    <div class="log-line"><span class="ts">12:44:58</span> [QUEUE] Fetching next batch of 50 recipients...</div>
+    <div class="log-line"><span class="ts">12:44:12</span> [API] Webhook triggered: user_open event registered</div>
+    <div class="log-line warn"><span class="ts">12:43:55</span> [SYSTEM] Quota utilization threshold reached: 75%</div>
+  </div>
+</div>
+  `,
+  styles: [`
+    :host { display: block; }
+  `]
+})
+export class DashboardComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
+  private chart?: Chart;
+
+  campaigns = [
+    { name: "Soldes d'Hiver 2024", date: "Envoyée il y a 2h", statusLabel: 'ACTIVE', badgeClass: 'active', progress: 85, sent: '12,402', total: '14,500' },
+    { name: "Newsletter Mensuelle - Jan", date: "Terminée hier", statusLabel: 'TERMINÉE', badgeClass: 'done', progress: 100, sent: '8,902', total: '8,902' },
+    { name: "Lancement Produit Beta", date: "Dernière modif il y a 3j", statusLabel: 'BROUILLON', badgeClass: 'draft', progress: 0, sent: 'En attente', total: '-' },
+  ];
+
+  ngAfterViewInit() {
+    const ctx = this.barChartRef.nativeElement.getContext('2d')!;
+    const colors = barData.map((_, i) => i === 10 ? 'rgba(0,74,198,1)' : 'rgba(224,227,229,1)');
+    this.chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data: barData, backgroundColor: colors, borderRadius: 2 }] },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' sent' } } },
+        scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, color: '#434655', font: { size: 10 } } }, y: { display: false } }
+      }
+    });
+  }
+
+  ngOnDestroy() { this.chart?.destroy(); }
+}

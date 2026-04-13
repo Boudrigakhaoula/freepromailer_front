@@ -1,0 +1,153 @@
+import { Component, computed, signal, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MailService } from '../../../core/services/mail.service';
+import { Campaign } from '../../../models';
+
+@Component({
+  selector: 'app-campaigns-list',
+  standalone: true,
+  imports: [RouterLink, CommonModule],
+  template: `
+<div>
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Campaigns Management</h2>
+      <p class="page-sub">Gérez vos envois massifs, surveillez les performances en temps réel.</p>
+    </div>
+    <a routerLink="/campaigns/new" class="btn btn-primary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle Campagne
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:2rem">
+    @for (f of filters; track f) {
+      <button class="filter-pill" [class.active]="activeFilter()===f" [class.inactive]="activeFilter()!==f" (click)="activeFilter.set(f)">{{f}}</button>
+    }
+  </div>
+
+  <!-- Cards grid -->
+  <div class="grid-3" style="margin-bottom:2rem">
+    @for (c of filteredCampaigns(); track c.id) {
+      <div class="campaign-card card" [class.border-failed]="c.status==='FAILED'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+          <span class="badge" [ngClass]="badgeClass(c.status)">
+            <svg *ngIf="c.status==='IN_PROGRESS'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 3s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.28-4.73L23 4"/></svg>
+            {{statusLabel(c.status)}}
+          </span>
+          <button class="btn btn-icon btn-secondary" style="display:inline-flex">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+        </div>
+        <h3 style="font-family:var(--font-headline);font-size:1.125rem;font-weight:700;margin-bottom:.25rem">{{c.name}}</h3>
+        <p style="font-size:.875rem;color:var(--color-on-surface-variant);margin-bottom:1.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [style.color]="c.status==='FAILED'?'var(--color-error)':''">{{c.subject}}</p>
+
+        <div style="margin-top:auto">
+          <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:600;margin-bottom:.5rem">
+            <span style="color:var(--color-on-surface-variant)">Progression</span>
+            <span [style.color]="progressColor(c.status)">{{c.progress}}%</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:1.5rem"><div class="prog-fill" [style.width]="c.progress+'%'" [style.background]="progressColor(c.status)"></div></div>
+
+          <div style="display:flex;gap:.5rem">
+            <button *ngIf="c.status==='IN_PROGRESS'" class="btn btn-secondary" style="flex:1;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause
+            </button>
+            <a *ngIf="c.status==='COMPLETED'" routerLink="/reports" class="btn btn-primary" style="flex:1;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Rapport
+            </a>
+            <button *ngIf="c.status==='PAUSED'" class="btn btn-secondary" style="flex:1;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Reprendre
+            </button>
+            <button *ngIf="c.status==='DRAFT'" class="btn btn-primary" style="flex:1;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Continuer
+            </button>
+            <button *ngIf="c.status==='FAILED'" class="btn btn-secondary" style="flex:1;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.28-4.73L23 4"/></svg> Réessayer
+            </button>
+            <button class="btn btn-secondary btn-icon" (click)="openDelete(c)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" *ngIf="c.status==='DRAFT'"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" *ngIf="c.status!=='DRAFT'"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Stats footer -->
+  <div class="terminal" style="display:flex;flex-wrap:wrap;align-items:center;gap:3rem;padding:2.5rem">
+    <div style="flex:1">
+      <h4 style="color:var(--color-inverse-on-surface);font-size:1.25rem;font-weight:700;font-family:var(--font-headline);margin-bottom:.5rem">Performance Globale</h4>
+      <p style="color:var(--color-on-surface-variant);font-size:.875rem;max-width:28rem">Vos campagnes ont atteint un taux d'ouverture moyen de 24.8% cette semaine.</p>
+    </div>
+    <div style="display:flex;gap:3rem">
+      <div><div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant);margin-bottom:.25rem">Emails Envoyés</div><div style="color:var(--color-inverse-on-surface);font-size:1.875rem;font-weight:900;font-family:var(--font-headline)">128.5k</div></div>
+      <div><div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant);margin-bottom:.25rem">Ouvertures</div><div style="color:var(--color-secondary-container);font-size:1.875rem;font-weight:900;font-family:var(--font-headline)">32.1k</div></div>
+      <div><div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant);margin-bottom:.25rem">Délivrabilité</div><div style="color:var(--color-primary-container);font-size:1.875rem;font-weight:900;font-family:var(--font-headline)">99.2%</div></div>
+    </div>
+  </div>
+
+  <!-- Delete modal -->
+  @if (showDelete()) {
+    <div class="modal-overlay" (click)="showDelete.set(false)">
+      <div class="modal" style="max-width:24rem" (click)="$event.stopPropagation()">
+        <div style="padding:2rem;text-align:center">
+          <div style="width:4rem;height:4rem;background:rgba(186,26,26,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;color:var(--color-error)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </div>
+          <h4 style="font-family:var(--font-headline);font-weight:700;font-size:1.125rem;margin-bottom:.5rem">Supprimer la campagne ?</h4>
+          <p style="font-size:.875rem;color:var(--color-on-surface-variant)">Cette action est irréversible. <strong>{{deleteTarget()?.name}}</strong> sera supprimée.</p>
+          <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+            <button class="btn btn-ghost" style="flex:1;justify-content:center" (click)="showDelete.set(false)">Annuler</button>
+            <button class="btn btn-danger" style="flex:1;justify-content:center" (click)="confirmDelete()">Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+  `,
+  styles: [`
+    :host { display: block; }
+    .campaign-card { padding: 1.5rem; display: flex; flex-direction: column; transition: transform .3s, box-shadow .3s;
+      &:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+      &.border-failed { border-left: 4px solid var(--color-error); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  `]
+})
+export class CampaignsListComponent {
+  mailSvc     = inject(MailService);
+  activeFilter = signal('Toutes');
+  showDelete   = signal(false);
+  deleteTarget = signal<Campaign | null>(null);
+
+  filters = ['Toutes','Brouillon','En cours','Complétée','En pause','Échouée'];
+
+  filteredCampaigns = computed(() => {
+    const f = this.activeFilter();
+    const all = this.mailSvc.campaigns();
+    const map: Record<string,string> = { 'Brouillon':'DRAFT','En cours':'IN_PROGRESS','Complétée':'COMPLETED','En pause':'PAUSED','Échouée':'FAILED' };
+    return f === 'Toutes' ? all : all.filter(c => c.status === map[f]);
+  });
+
+  badgeClass(s: string) {
+    return { 'active': s==='IN_PROGRESS', 'done': s==='COMPLETED', 'paused': s==='PAUSED', 'draft': s==='DRAFT', 'failed': s==='FAILED' };
+  }
+
+  statusLabel(s: string) {
+    const m: Record<string,string> = { IN_PROGRESS:'IN PROGRESS', COMPLETED:'COMPLÉTÉE', PAUSED:'EN PAUSE', DRAFT:'BROUILLON', FAILED:'ÉCHOUÉE' };
+    return m[s] ?? s;
+  }
+
+  progressColor(s: string) {
+    const m: Record<string,string> = { IN_PROGRESS:'var(--color-primary)', COMPLETED:'var(--color-secondary)', PAUSED:'#f59e0b', FAILED:'var(--color-error)', DRAFT:'var(--color-surface-container-highest)' };
+    return m[s] ?? 'var(--color-primary)';
+  }
+
+  openDelete(c: Campaign) { this.deleteTarget.set(c); this.showDelete.set(true); }
+  confirmDelete() { if (this.deleteTarget()) { this.mailSvc.deleteCampaign(this.deleteTarget()!.id); } this.showDelete.set(false); }
+}

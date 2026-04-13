@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   template: `
 <div class="login-page">
   <div class="login-bg-blob left"></div>
@@ -60,7 +61,7 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
 
     <p class="login-footer">
-      Pas encore de compte ? <button class="link-btn">Créer un compte gratuitement</button>
+      Pas encore de compte ? <a routerLink="/register" class="link-btn">Créer un compte gratuitement</a>
     </p>
   </div>
 </div>

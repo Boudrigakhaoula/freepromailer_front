@@ -22,6 +22,10 @@ export class AuthService {
     this.router.navigate(['/']);
   }
 
+  register(email: string, password: string): void {
+    this.login(email, password);
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     this.isLoggedIn.set(false);

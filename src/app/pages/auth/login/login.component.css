@@ -1,0 +1,25 @@
+.login-page { min-height: 100vh; background: var(--color-surface); display: flex; align-items: center; justify-content: center; padding: 1.5rem; position: relative; overflow: hidden; }
+    .login-bg-blob { position: absolute; width: 40%; height: 40%; border-radius: 50%; filter: blur(120px); pointer-events: none;
+      &.left  { top: -10%; left: -10%; background: rgba(0,74,198,.05); }
+      &.right { bottom: -10%; right: -10%; background: rgba(0,108,73,.05); }
+    }
+    .login-card { background: var(--color-surface-container-lowest); border-radius: 1.5rem; padding: 2.5rem; box-shadow: 0 25px 60px rgba(0,0,0,.08); border: 1px solid rgba(195,198,215,.1); width: 100%; max-width: 28rem; position: relative; z-index: 1; }
+    .login-logo { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2.5rem;
+      h1 { font-size: 1.875rem; font-weight: 900; font-family: var(--font-headline); letter-spacing: -.025em; margin: 1rem 0 .5rem; }
+      p  { color: var(--color-on-surface-variant); font-weight: 500; font-size: .875rem; }
+    }
+    .login-logo-icon { width: 4rem; height: 4rem; background: var(--color-primary); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 8px 24px rgba(0,74,198,.25); }
+    .login-form { display: flex; flex-direction: column; gap: 1.5rem; }
+    .input-wrap { position: relative; }
+    .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-on-surface-variant); pointer-events: none; }
+    .form-input.with-icon { padding-left: 3rem; }
+    .login-divider { display: flex; align-items: center; gap: 1rem; margin: 2rem 0;
+      .div-line { flex: 1; height: 1px; background: rgba(195,198,215,.3); }
+      span { font-size: .625rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--color-on-surface-variant); white-space: nowrap; }
+    }
+    .oauth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .oauth-btn { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1rem; border-radius: .75rem; border: 1px solid rgba(195,198,215,.3); background: none; cursor: pointer; font-size: .875rem; font-weight: 700; color: var(--color-on-surface); transition: background .15s;
+      &:hover { background: var(--color-surface-container-low); }
+    }
+    .login-footer { margin-top: 2.5rem; text-align: center; font-size: .75rem; color: var(--color-on-surface-variant); }
+    .link-btn { background: none; border: none; cursor: pointer; color: var(--color-primary); font-size: inherit; font-weight: 700; &:hover { text-decoration: underline; } }

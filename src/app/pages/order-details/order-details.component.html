@@ -1,0 +1,138 @@
+<div style="max-width:56rem;margin:0 auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+    <button class="btn btn-ghost" (click)="back()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Retour aux paramètres
+    </button>
+    <div style="display:flex;gap:.75rem">
+      <button class="btn btn-secondary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimer
+      </button>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="card" style="overflow:hidden">
+    <!-- Header -->
+    <div style="padding:3rem;background:rgba(0,74,198,.03);border-bottom:1px solid rgba(195,198,215,.1)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:2rem">
+        <div>
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+            <div style="width:2.5rem;height:2.5rem;background:var(--color-primary);border-radius:.75rem;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(0,74,198,.25)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h2 style="font-size:1.5rem;font-weight:900;font-family:var(--font-headline)">Facture</h2>
+          </div>
+          <div>
+            <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant)">Numéro de commande</p>
+            <p style="font-size:1.125rem;font-weight:700;font-family:var(--font-technical)">{{order.id}}</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:3rem;flex-wrap:wrap">
+          <div>
+            <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant);margin-bottom:.25rem">Date d'émission</p>
+            <p style="font-weight:700">📅 {{order.date}}</p>
+          </div>
+          <div>
+            <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant);margin-bottom:.25rem">Statut</p>
+            <span class="badge active">✓ {{order.status}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing info -->
+    <div style="padding:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;border-bottom:1px solid rgba(195,198,215,.1)">
+      <div>
+        <h3 style="font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-primary);margin-bottom:1rem">Émetteur</h3>
+        <p style="font-weight:700;font-size:1.125rem;margin-bottom:.5rem">FreeProMailer SAS</p>
+        <p style="font-size:.875rem;color:var(--color-on-surface-variant);line-height:1.7">
+          42 Avenue des Champs-Élysées<br>
+          75008 Paris, France<br>
+          SIRET: 123 456 789 00012<br>
+          TVA: FR 12 345678901
+        </p>
+      </div>
+      <div>
+        <h3 style="font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-primary);margin-bottom:1rem">Facturé à</h3>
+        <p style="font-weight:700;font-size:1.125rem;margin-bottom:.5rem">{{order.customer.name}}</p>
+        <p style="font-size:.875rem;color:var(--color-on-surface-variant);line-height:1.7">
+          {{order.customer.company}}<br>
+          {{order.customer.address}}<br>
+          {{order.customer.email}}
+        </p>
+      </div>
+    </div>
+
+    <!-- Items table -->
+    <div style="padding:0 3rem">
+      <table class="data-table">
+        <thead><tr>
+          <th>Description</th>
+          <th style="text-align:center">Qté</th>
+          <th style="text-align:right">Prix Unitaire</th>
+          <th style="text-align:right">Total</th>
+        </tr></thead>
+        <tbody>
+          @for (item of order.items; track item.description) {
+            <tr>
+              <td>
+                <p style="font-weight:700;font-size:.875rem">{{item.description}}</p>
+                <p *ngIf="item.period" style="font-size:.6875rem;color:var(--color-on-surface-variant);margin-top:.25rem">Période : {{item.period}}</p>
+              </td>
+              <td style="text-align:center;font-size:.875rem">{{item.qty}}</td>
+              <td style="text-align:right;font-size:.875rem">{{item.price}}</td>
+              <td style="text-align:right;font-weight:700;font-size:.875rem">{{item.total}}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totals -->
+    <div style="padding:2rem 3rem;background:rgba(242,244,246,.3);border-top:1px solid rgba(195,198,215,.1)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:2rem">
+        <div style="max-width:20rem">
+          <div style="display:flex;align-items:center;gap:.75rem;padding:1rem;background:var(--color-surface-container-lowest);border-radius:1rem;border:1px solid rgba(195,198,215,.1);margin-bottom:1rem">
+            <div style="width:2.5rem;height:2.5rem;background:rgba(0,108,73,.1);color:var(--color-secondary);border-radius:.75rem;display:flex;align-items:center;justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <div>
+              <p style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant)">Mode de paiement</p>
+              <p style="font-size:.875rem;font-weight:700">{{order.paymentMethod}}</p>
+            </div>
+          </div>
+          <p style="font-size:.6875rem;color:var(--color-on-surface-variant);font-style:italic">Cette facture a été réglée automatiquement le {{order.date}}.</p>
+        </div>
+        <div style="width:16rem">
+          <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.75rem">
+            <span style="color:var(--color-on-surface-variant)">Sous-total HT</span>
+            <span style="font-weight:700">{{order.amount}}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.75rem">
+            <span style="color:var(--color-on-surface-variant)">TVA (20%)</span>
+            <span style="font-weight:700">{{order.tax}}</span>
+          </div>
+          <div style="height:1px;background:rgba(195,198,215,.1);margin-bottom:.75rem"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:1.125rem;font-weight:900;font-family:var(--font-headline);text-transform:uppercase;letter-spacing:-.025em">Total TTC</span>
+            <span style="font-size:1.5rem;font-weight:900;color:var(--color-primary)">{{order.total}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:2rem;background:var(--color-surface-container-low);border-radius:.75rem;border:1px solid rgba(195,198,215,.1);margin-top:2rem">
+    <p style="font-size:.875rem;color:var(--color-on-surface-variant)">
+      Une question sur cette facture ?
+      <button style="background:none;border:none;cursor:pointer;color:var(--color-primary);font-weight:700;font-size:.875rem">Contactez notre support</button>
+      ou consultez notre
+      <button style="background:none;border:none;cursor:pointer;color:var(--color-primary);font-weight:700;font-size:.875rem">centre d'aide</button>.
+    </p>
+  </div>
+</div>

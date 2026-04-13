@@ -1,0 +1,84 @@
+<div class="register-page">
+  <div class="register-bg-blob left"></div>
+  <div class="register-bg-blob right"></div>
+
+  <div class="register-card">
+    <div class="register-logo">
+      <div class="register-logo-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>Créer un compte</h1>
+      <p>Rejoignez FreeProMailer en quelques secondes</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="submit()" class="register-form" novalidate>
+      <div class="name-grid">
+        <div class="form-group">
+          <label class="form-label" for="firstName">Prénom</label>
+          <div class="input-wrap" [class.invalid]="isInvalid('firstName')">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input id="firstName" type="text" formControlName="firstName" placeholder="Jean" class="form-input with-icon" />
+          </div>
+          @if (isInvalid('firstName')) {
+            <p class="error-text">Le prénom est requis</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="lastName">Nom</label>
+          <div class="input-wrap" [class.invalid]="isInvalid('lastName')">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input id="lastName" type="text" formControlName="lastName" placeholder="Dupont" class="form-input with-icon" />
+          </div>
+          @if (isInvalid('lastName')) {
+            <p class="error-text">Le nom est requis</p>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <div class="input-wrap" [class.invalid]="isInvalid('email')">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input id="email" type="email" formControlName="email" placeholder="nom@entreprise.com" class="form-input with-icon" />
+        </div>
+        @if (isInvalid('email')) {
+          <p class="error-text">Veuillez saisir un email valide</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Mot de passe</label>
+        <div class="input-wrap" [class.invalid]="isInvalid('password')">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Minimum 6 caractères" class="form-input with-icon with-toggle" />
+          <button type="button" class="toggle-btn" (click)="togglePassword()" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+            @if (!showPassword) {
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            } @else {
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.77 21.77 0 0 1 5.06-6.94"/><path d="M9.9 4.24A10.93 10.93 0 0 1 12 4c7 0 11 8 11 8a22.14 22.14 0 0 1-3.17 4.87"/><path d="M1 1l22 22"/></svg>
+            }
+          </button>
+        </div>
+        @if (isInvalid('password')) {
+          <p class="error-text">Le mot de passe doit contenir au moins 6 caractères</p>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary register-btn" [disabled]="isSubmitting">
+        @if (isSubmitting) {
+          <span class="spinner" aria-hidden="true"></span>
+          Inscription en cours...
+        } @else {
+          S'inscrire
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        }
+      </button>
+    </form>
+
+    <p class="register-footer">
+      Vous avez déjà un compte ?
+      <a routerLink="/login" class="link-btn">Se connecter</a>
+    </p>
+  </div>
+</div>

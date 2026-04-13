@@ -1,0 +1,7 @@
+.setting-nav { display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:.75rem;border:1px solid transparent;background:none;cursor:pointer;width:100%;transition:all .2s;
+      &:hover { background:var(--color-surface-container-low); }
+      &.active { background:rgba(0,74,198,.1);border-color:rgba(0,74,198,.2); }
+    }
+    .sn-icon { width:2.5rem;height:2.5rem;border-radius:.5rem;background:var(--color-surface-container-high);color:var(--color-on-surface-variant);display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s;flex-shrink:0;
+      &.active { background:var(--color-primary);color:#fff; }
+    }

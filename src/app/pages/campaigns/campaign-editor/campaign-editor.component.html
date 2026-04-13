@@ -1,0 +1,208 @@
+<div style="margin:-2rem;display:flex;flex-direction:column;min-height:calc(100vh - 4rem)">
+
+  <!-- Stepper header -->
+  <section style="background:var(--color-surface-container-low);padding:2rem 3rem;border-bottom:1px solid rgba(195,198,215,.1)">
+    <div style="max-width:56rem;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3rem">
+        <div>
+          <h2 style="font-family:var(--font-headline);font-weight:900;font-size:1.5rem">Nouvelle Campagne</h2>
+          <p style="color:var(--color-on-surface-variant);font-size:.875rem;margin-top:.25rem">Étape {{step()}} : {{stepLabel()}}</p>
+        </div>
+        <div style="display:flex;gap:1rem">
+          <button class="btn btn-secondary" (click)="prev()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Précédent
+          </button>
+          <button class="btn btn-primary" (click)="next()">
+            {{step()===4?'Lancer la campagne':'Suivant'}}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress steps -->
+      <nav style="display:flex;align-items:center;justify-content:space-between;position:relative">
+        <div style="position:absolute;top:50%;left:0;width:100%;height:1px;background:rgba(195,198,215,.3);transform:translateY(-50%);z-index:0"></div>
+        @for (s of steps; track s; let i = $index) {
+          <div style="display:flex;flex-direction:column;align-items:center;gap:.75rem;background:var(--color-surface-container-low);padding:0 1rem;position:relative;z-index:1">
+            <div [style.background]="i+1 < step() ? 'var(--color-secondary)' : i+1 === step() ? 'var(--color-primary)' : 'var(--color-surface-container-highest)'"
+                 [style.color]="i+1 <= step() ? '#fff' : 'var(--color-on-surface-variant)'"
+                 [style.box-shadow]="i+1 === step() ? '0 0 0 4px rgba(0,74,198,.2)' : 'none'"
+                 style="width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;transition:all .3s">
+              @if (i+1 < step()) {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              } @else { {{i+1}} }
+            </div>
+            <span style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em" [style.color]="i+1===step()?'var(--color-primary)':'var(--color-on-surface-variant)'">{{s}}</span>
+          </div>
+        }
+      </nav>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <div style="flex:1;padding:2rem;background:var(--color-surface)">
+    <div style="max-width:72rem;margin:0 auto">
+
+      @if (step()===1) {
+        <div style="max-width:40rem;margin:0 auto">
+          <div class="card" style="padding:2rem">
+            <h3 style="font-family:var(--font-headline);font-weight:700;font-size:1.25rem;margin-bottom:1.5rem">Informations de base</h3>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label">Nom de la campagne</label>
+              <input type="text" class="form-input" [(ngModel)]="campaignName" placeholder="Ex: Soldes d'été 2024" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type d'envoi</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem">
+                <button style="padding:1rem;border-radius:.75rem;border:2px solid var(--color-primary);background:rgba(0,74,198,.05);color:var(--color-primary);text-align:left;cursor:pointer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:.5rem"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <p style="font-weight:700;font-size:.875rem">Email Standard</p>
+                  <p style="font-size:.625rem;opacity:.7">Envoi unique à une liste</p>
+                </button>
+                <button style="padding:1rem;border-radius:.75rem;border:1px solid rgba(195,198,215,.3);background:none;color:var(--color-on-surface-variant);text-align:left;cursor:pointer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:.5rem"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <p style="font-weight:700;font-size:.875rem">A/B Testing</p>
+                  <p style="font-size:.625rem;opacity:.7">Testez plusieurs versions</p>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (step()===2) {
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:2rem">
+          <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="card" style="padding:1.5rem">
+              <label class="form-label">Objet de l'email</label>
+              <div style="display:flex;gap:1rem;margin-top:.5rem">
+                <input type="text" class="form-input" [(ngModel)]="subject" placeholder="L'objet de votre email..." />
+                <button class="btn btn-secondary" (click)="generateAI()" style="white-space:nowrap" [disabled]="generating()">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  {{generating() ? 'Génération...' : 'IA'}}
+                </button>
+              </div>
+            </div>
+            <div class="card" style="overflow:hidden">
+              <div style="background:var(--color-surface-container-low);padding:.75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(195,198,215,.1)">
+                @for (icon of toolbarIcons; track icon) {
+                  <button class="btn btn-icon btn-secondary" style="display:inline-flex">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path [attr.d]="icon"/></svg>
+                  </button>
+                }
+              </div>
+              <div style="padding:3rem;min-height:36rem;background:#fff">
+                <div style="max-width:40rem;margin:0 auto">
+                  <div style="height:8rem;background:var(--color-surface-container-low);border-radius:.75rem;border:2px dashed rgba(195,198,215,.3);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;cursor:pointer;color:var(--color-on-surface-variant)">
+                    <span style="font-size:.875rem">Cliquez pour ajouter une bannière</span>
+                  </div>
+                  <h1 style="font-family:var(--font-headline);font-weight:900;font-size:2rem;line-height:1.2;margin-bottom:1rem">Bonjour {{ "{{first_name}}" }}, prêt pour le renouveau ?</h1>
+                  <p style="font-size:1rem;color:var(--color-on-surface-variant);line-height:1.7;margin-bottom:1.5rem">Le printemps est là, et avec lui, notre toute nouvelle collection.</p>
+                  <button style="background:var(--color-primary);color:#fff;padding:.75rem 2rem;border-radius:.5rem;border:none;font-weight:700;font-size:1.125rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,74,198,.25)">Explorer la collection</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI sidebar -->
+          <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="card" style="padding:1.5rem;border-color:rgba(0,74,198,.1)">
+              <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+                <div style="width:2.5rem;height:2.5rem;border-radius:.75rem;background:var(--color-primary);display:flex;align-items:center;justify-content:center;color:#fff">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div>
+                  <div style="font-family:var(--font-headline);font-weight:700">Gemini AI Assistant</div>
+                  <div style="font-size:.75rem;color:var(--color-on-surface-variant)">Suggestions intelligentes</div>
+                </div>
+              </div>
+              <div style="font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--color-on-surface-variant);margin-bottom:.75rem">Objets recommandés</div>
+              @if (aiSuggestions().length === 0) {
+                <div style="padding:.75rem;background:var(--color-surface-container-low);border-radius:.75rem;font-size:.75rem;color:var(--color-on-surface-variant);font-style:italic">Cliquez sur "IA" pour générer des suggestions.</div>
+              }
+              @for (s of aiSuggestions(); track s) {
+                <button (click)="subject = s" style="width:100%;text-align:left;padding:.75rem;border-radius:.75rem;background:var(--color-surface-container-low);border:1px solid transparent;cursor:pointer;margin-bottom:.5rem;transition:all .15s;display:block">
+                  <div style="font-size:.875rem;font-weight:500">{{s}}</div>
+                  <div style="font-size:.625rem;color:var(--color-secondary);font-weight:700;margin-top:.25rem">↑ +12% d'ouverture</div>
+                </button>
+              }
+            </div>
+            <div class="terminal" style="padding:1.5rem">
+              <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:rgba(239,241,243,.5);margin-bottom:.75rem">Preview Header Data</div>
+              <div class="log-line text-mono"><span class="ts">From:</span> marketing&#64;freepromailer.io</div>
+              <div class="log-line text-mono"><span class="ts">Subject:</span> {{subject}}</div>
+              <div class="log-line text-mono"><span class="ts">X-Mailer:</span> FreeProMailer_v4.2</div>
+              <div class="log-line ok text-mono" style="margin-top:.5rem">Spam Score: 0.1/10 (Low)</div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (step()===3) {
+        <div style="max-width:48rem;margin:0 auto">
+          <div class="card" style="padding:2rem">
+            <h3 style="font-family:var(--font-headline);font-weight:700;font-size:1.25rem;margin-bottom:1.5rem">Sélection des destinataires</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div style="padding:1.5rem;border-radius:.75rem;border:2px solid var(--color-primary);background:rgba(0,74,198,.05)">
+                <div style="font-weight:700;margin-bottom:1rem">Listes de contacts</div>
+                <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#fff;border-radius:.5rem;border:1px solid rgba(195,198,215,.3);cursor:pointer;margin-bottom:.5rem">
+                  <input type="checkbox" checked /> <span style="font-size:.875rem;font-weight:500">Tous les clients (8,902)</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#fff;border-radius:.5rem;border:1px solid rgba(195,198,215,.3);cursor:pointer">
+                  <input type="checkbox" /> <span style="font-size:.875rem;font-weight:500">Nouveaux inscrits (452)</span>
+                </label>
+              </div>
+              <div style="padding:1.5rem;border-radius:.75rem;border:1px solid rgba(195,198,215,.3)">
+                <div style="font-weight:700;margin-bottom:.5rem">Segments IA</div>
+                <p style="font-size:.75rem;color:var(--color-on-surface-variant);margin-bottom:1rem">Laissez l'IA cibler les contacts les plus susceptibles de convertir.</p>
+                <button class="btn btn-secondary" style="width:100%;justify-content:center;font-size:.75rem">Générer un segment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (step()===4) {
+        <div style="max-width:40rem;margin:0 auto">
+          <div class="card" style="padding:2rem">
+            <h3 style="font-family:var(--font-headline);font-weight:700;font-size:1.25rem;margin-bottom:1.5rem">Planification & Envoi</h3>
+            <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem">
+              <label style="display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:.75rem;border:2px solid var(--color-primary);background:rgba(0,74,198,.05);cursor:pointer">
+                <input type="radio" name="sched" checked /> <div><p style="font-weight:700;font-size:.875rem">Envoyer maintenant</p><p style="font-size:.625rem;opacity:.7">L'envoi débutera immédiatement après validation</p></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:.75rem;border:1px solid rgba(195,198,215,.3);cursor:pointer">
+                <input type="radio" name="sched" /> <div><p style="font-weight:700;font-size:.875rem">Programmer l'envoi</p><p style="font-size:.625rem;opacity:.7">Choisissez une date et une heure précise</p></div>
+              </label>
+            </div>
+            <div style="background:var(--color-surface-container-low);border-radius:.75rem;padding:1rem">
+              <div style="font-size:.75rem;font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;color:var(--color-secondary)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Résumé
+              </div>
+              <div style="font-size:.6875rem;color:var(--color-on-surface-variant);display:flex;flex-direction:column;gap:.375rem">
+                <div style="display:flex;justify-content:space-between"><span>Objet :</span> <strong style="color:var(--color-on-surface)">{{subject}}</strong></div>
+                <div style="display:flex;justify-content:space-between"><span>Destinataires :</span> <strong style="color:var(--color-on-surface)">8,902 contacts</strong></div>
+                <div style="display:flex;justify-content:space-between"><span>Expéditeur :</span> <strong style="color:var(--color-on-surface)">marketing&#64;freepromailer.io</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+
+  <!-- Sticky footer -->
+  <footer style="height:5rem;background:var(--color-surface-container-lowest);border-top:1px solid rgba(195,198,215,.1);display:flex;align-items:center;padding:0 2rem;justify-content:space-between;position:sticky;bottom:0;z-index:40">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <button class="icon-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></button>
+      <span style="font-size:.75rem;color:var(--color-on-surface-variant)">Dernière sauvegarde : il y a 2 min</span>
+    </div>
+    <div style="display:flex;gap:1rem">
+      <button class="btn btn-ghost">Enregistrer en brouillon</button>
+      <button class="btn btn-primary" (click)="next()">{{step()===4?'Confirmer l\'envoi':'Continuer'}}</button>
+    </div>
+  </footer>
+</div>

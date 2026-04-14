@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { UserProfileResponse, UserProfileRequest, ChangePasswordRequest } from '../../models/auth.models';
+import { UserProfileResponse, UserProfileRequest, ChangePasswordRequest } from '../../core/models/auth.models';
 
 @Component({
   selector: 'app-settings',

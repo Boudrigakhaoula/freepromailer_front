@@ -41,3 +41,8 @@ export interface ChangePasswordRequest {
   newPassword: string;
   confirmPassword: string;
 }
+export interface ApiResponse<T> {
+  status: string;
+  message: string;
+  data: T;
+}

@@ -2,7 +2,7 @@ import { Component, computed, signal, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MailService } from '../../../services/mail.service';
-import { Campaign } from '../../../models';
+import { Campaign } from '../../../core/models';
 
 @Component({
   selector: 'app-campaigns-list',

@@ -35,7 +35,14 @@
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
-          <input type="password" formControlName="password" placeholder="••••••••••••" class="form-input with-icon" />
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••••••" class="form-input with-icon with-toggle" />
+          <button type="button" class="password-toggle" (click)="togglePasswordVisibility()" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+            @if (showPassword) {
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.11 1 12c.92-2.18 2.62-4.02 4.83-5.25"/><path d="M9.9 4.24A10.93 10.93 0 0 1 12 4c5 0 9.27 3.89 11 8a11.06 11.06 0 0 1-1.67 2.68"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            } @else {
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            }
+          </button>
         </div>
       </div>
 
@@ -51,6 +58,9 @@
         }
       </button>
 
+      @if (successMessage) {
+        <p class="success-text">{{ successMessage }}</p>
+      }
       @if (errorMessage) {
         <p class="error-text">{{ errorMessage }}</p>
       }

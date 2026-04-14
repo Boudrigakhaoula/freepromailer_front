@@ -20,7 +20,8 @@
     .toggle-btn { position: absolute; top: 50%; right: .5rem; transform: translateY(-50%); border: none; background: none; color: var(--color-on-surface-variant); width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .5rem; cursor: pointer; transition: background .15s, color .15s;
       &:hover { background: var(--color-surface-container); color: var(--color-primary); }
     }
-    .error-text { color: var(--color-error); font-size: .75rem; margin-top: .25rem; font-weight: 600; }
+    .field-error { color: var(--color-error); font-size: .75rem; margin-top: .25rem; font-weight: 600; }
+    .register-alert-error { color: #b91c1c; background: rgba(239,68,68,.12); padding: .75rem; border-radius: .5rem; font-size: .875rem; }
     .register-btn { width: 100%; justify-content: center; padding: 1rem; margin-top: .5rem; transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
       &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,74,198,.23); }
       &:disabled { opacity: .85; cursor: not-allowed; }

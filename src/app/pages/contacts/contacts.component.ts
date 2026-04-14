@@ -2,7 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MailService } from '../../services/mail.service';
-import { Contact } from '../../models';
+import { Contact } from '../../core/models';
 
 @Component({
   selector: 'app-contacts',

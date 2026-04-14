@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoginRequest } from '../../../models/auth.models';
+import { LoginRequest } from '../../../core/models/auth.models';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -16,7 +16,9 @@ export class LoginComponent {
 
   loginForm: FormGroup;
   isSubmitting = false;
+  successMessage = '';
   errorMessage = '';
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -30,25 +32,39 @@ export class LoginComponent {
   }
 
   login(): void {
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
 
     this.isSubmitting = true;
+    this.successMessage = '';
     this.errorMessage = '';
 
     const req: LoginRequest = this.loginForm.value;
 
     this.authService.login(req).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.successMessage = 'Connexion réussie. Redirection...';
+        this.isSubmitting = false;
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 700);
       },
       error: (err) => {
+        this.successMessage = '';
         this.isSubmitting = false;
         this.errorMessage = err.error?.message || 'Email ou mot de passe incorrect';
         console.error(err);
       }
     });
   }
-    isInvalid(controlName: string): boolean {
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  isInvalid(controlName: string): boolean {
     const control = this.loginForm.get(controlName);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }

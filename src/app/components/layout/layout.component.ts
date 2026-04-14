@@ -3,7 +3,7 @@ import { Component, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
-import { AuthResponse } from '../../models/auth.models';
+import { AuthResponse } from '../../core/models/auth.models';
 
 interface NavItem { label: string; href: string; icon: string; }
 

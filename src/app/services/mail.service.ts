@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Campaign, Contact, Template, Workflow } from '../models';
+import { Campaign, Contact, Template, Workflow } from '../core/models';
 
 @Injectable({ providedIn: 'root' })
 export class MailService {

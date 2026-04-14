@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AuthResponse,
@@ -8,8 +8,9 @@ import {
   LoginRequest,
   UserProfileResponse,
   UserProfileRequest,
-  ChangePasswordRequest
-} from '../../models/auth.models';
+  ChangePasswordRequest,
+  ApiResponse
+} from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -23,29 +24,35 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  register(req: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
-      `${environment.userApi}/api/auth/register`, req
-    ).pipe(
-      tap(res => this.setCurrentUser(res))
-    );
-  }
+register(req: RegisterRequest): Observable<AuthResponse> {
+  return this.http.post<ApiResponse<AuthResponse>>(
+    `${environment.userApi}/api/auth/register`, req
+  ).pipe(
+    map(res => res.data),
+    tap(user => this.setCurrentUser(user))
+  );
+}
 
-  login(req: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
-      `${environment.userApi}/api/auth/login`, req
-    ).pipe(
-      tap(res => this.setCurrentUser(res))
-    );
-  }
+login(req: LoginRequest): Observable<AuthResponse> {
+  return this.http.post<ApiResponse<AuthResponse>>(
+    `${environment.userApi}/api/auth/login`, req
+  ).pipe(
+    map(res => res.data),
+    tap(user => this.setCurrentUser(user))
+  );
+}
 
-  getMyProfile(): Observable<UserProfileResponse> {
-    return this.http.get<UserProfileResponse>(`${environment.userApi}/api/profile/me`);
-  }
+getMyProfile(): Observable<UserProfileResponse> {
+  return this.http.get<ApiResponse<UserProfileResponse>>(
+    `${environment.userApi}/api/profile/me`
+  ).pipe(map(res => res.data));
+}
 
-  updateMyProfile(req: UserProfileRequest): Observable<UserProfileResponse> {
-    return this.http.put<UserProfileResponse>(`${environment.userApi}/api/profile/me`, req);
-  }
+updateMyProfile(req: UserProfileRequest): Observable<UserProfileResponse> {
+  return this.http.put<ApiResponse<UserProfileResponse>>(
+    `${environment.userApi}/api/profile/me`, req
+  ).pipe(map(res => res.data));
+}
 
   changePassword(req: ChangePasswordRequest): Observable<void> {
     return this.http.post<void>(`${environment.userApi}/api/profile/change-password`, req);

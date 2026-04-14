@@ -232,3 +232,120 @@ a { text-decoration: none; color: inherit; }
 .scrollbar-hide { scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
 .text-mono { font-family: var(--font-technical); }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Responsive */
+.mobile-menu-btn { display: none; }
+
+.data-table { min-width: 680px; }
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 16rem !important;
+    transform: translateX(-100%);
+    transition: transform .28s ease;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, .14);
+  }
+
+  .sidebar.open { transform: translateX(0); }
+  .sidebar.closed { transform: translateX(-100%); }
+
+  .main-area {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .top-header {
+    height: auto;
+    min-height: 4rem;
+    padding: .75rem 1rem;
+    gap: .75rem;
+  }
+
+  .mobile-menu-btn { display: inline-flex; }
+  .search-wrap { max-width: none; }
+  .header-actions { gap: .5rem; }
+  .user-meta,
+  .h-divider { display: none; }
+
+  .notif-panel {
+    width: min(22rem, calc(100vw - 1rem));
+    right: -.5rem;
+  }
+
+  .page-content {
+    padding: 1.25rem;
+    max-width: 100%;
+  }
+
+  .page-title { font-size: 1.5rem; }
+
+  .page-content [style*='grid-template-columns:2fr 1fr'],
+  .page-content [style*='grid-template-columns:1fr 2fr'],
+  .page-content [style*='grid-template-columns:1fr 1fr'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-content [style*='padding:2rem 3rem'],
+  .page-content [style*='padding:3rem'] {
+    padding: 1.25rem !important;
+  }
+
+  .page-content [style*='width:16rem'] {
+    width: min(100%, 22rem) !important;
+  }
+
+  .page-content [style*='min-height:32rem'],
+  .page-content [style*='min-height:36rem'] {
+    min-height: 18rem !important;
+  }
+
+  .page-content [style*='overflow:hidden'] {
+    overflow-x: auto !important;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-header { flex-wrap: wrap; }
+
+  .search-wrap {
+    order: 2;
+    flex: 1 1 100%;
+  }
+
+  .header-actions {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .page-content { padding: 1rem; }
+
+  .btn {
+    padding: .55rem 1rem;
+    font-size: .8125rem;
+  }
+
+  .kpi-card {
+    padding: 1.1rem;
+
+    .kpi-value { font-size: 1.45rem; }
+  }
+}
+
+@media (max-width: 640px) {
+  .data-table {
+    min-width: 560px;
+
+    th, td { padding: .75rem .875rem; }
+  }
+
+  .page-title { font-size: 1.25rem; }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer { padding: 1rem; }
+}

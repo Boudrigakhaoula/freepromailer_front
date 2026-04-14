@@ -5,3 +5,73 @@
     .sn-icon { width:2.5rem;height:2.5rem;border-radius:.5rem;background:var(--color-surface-container-high);color:var(--color-on-surface-variant);display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s;flex-shrink:0;
       &.active { background:var(--color-primary);color:#fff; }
     }
+
+.form-input.invalid {
+  box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.18);
+}
+
+.setting-error {
+  margin-top: .35rem;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.settings-success {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.settings-error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap .form-input {
+  padding-right: 2.8rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.45rem;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: var(--color-surface-container);
+  color: var(--color-primary);
+}
+
+.profile-avatar-big {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 50%;
+  border: 4px solid var(--color-surface-container);
+  background: var(--color-primary-container-light);
+  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 74, 198, 0.14);
+}

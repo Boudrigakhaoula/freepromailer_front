@@ -1,0 +1,63 @@
+/* ─── Spin animation (loading) ─────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Badge status colors ───────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  font-size: .625rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.badge-active {
+  background: rgba(0, 120, 64, .12);
+  color: #007840;
+}
+
+.badge-sent {
+  background: rgba(0, 74, 198, .1);
+  color: var(--color-primary);
+}
+
+.badge-unsub {
+  background: rgba(186, 26, 26, .1);
+  color: #ba1a1a;
+}
+
+.badge-bounced {
+  background: rgba(230, 100, 0, .12);
+  color: #c85000;
+}
+
+.badge-suppressed {
+  background: rgba(100, 60, 150, .12);
+  color: #7c3aed;
+}
+
+.badge-invalid {
+  background: rgba(150, 150, 150, .12);
+  color: var(--color-on-surface-variant);
+}
+
+/* ─── Drag-over zone ─────────────────────────────────────────────────────────── */
+.drag-over {
+  border-color: var(--color-primary) !important;
+  background: rgba(0, 74, 198, .04);
+}
+
+/* ─── Btn danger ─────────────────────────────────────────────────────────────── */
+.btn-danger {
+  background: #ba1a1a;
+  color: #fff;
+  border: none;
+}
+.btn-danger:hover {
+  background: #9c1616;
+}

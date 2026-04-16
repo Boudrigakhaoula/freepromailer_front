@@ -40,6 +40,14 @@ const routes: Routes = [
           ),
       },
       {
+        // Route édition — accessible uniquement si la campagne est DRAFT
+        path: 'campaigns/:id/edit',
+        loadComponent: () =>
+          import('./pages/campaigns/campaign-editor/campaign-editor.component').then(
+            (m) => m.CampaignEditorComponent
+          ),
+      },
+      {
         path: 'contacts',
         loadComponent: () =>
           import('./pages/contacts/contacts.component').then((m) => m.ContactsComponent),

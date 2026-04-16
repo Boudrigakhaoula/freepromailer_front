@@ -1,13 +1,15 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MailService } from '../../../services/mail.service';
 import { ContactService } from '../../../core/services/contact.service';
+import { CampaignApiService } from '../../../core/services/campaign-api.service';
 import { ContactList } from '../../../core/models/contact.models';
-import { Template } from '../../../core/models';
+import { Template } from '../../../services/mail.service';
+import { Campaign } from '../../../core/models/campaign.models';
 
-const STEPS = ['1. Infos générales','2. Contenu','3. Destinataires','4. Planification'];
+const STEPS = ['1. Infos générales', '2. Contenu', '3. Destinataires', '4. Planification'];
 
 @Component({
   selector: 'app-campaign-editor',
@@ -16,71 +18,71 @@ const STEPS = ['1. Infos générales','2. Contenu','3. Destinataires','4. Planif
   templateUrl: './campaign-editor.component.html',
   styleUrls: ['./campaign-editor.component.css'],
 })
-export class CampaignEditorComponent {
-  private readonly mailService = inject(MailService);
+export class CampaignEditorComponent implements OnInit {
+  private readonly mailService    = inject(MailService);
   private readonly contactService = inject(ContactService);
+  private readonly campaignApi    = inject(CampaignApiService);
+  private readonly router         = inject(Router);
+  private readonly route          = inject(ActivatedRoute);
+
+  // ── Mode édition (si on arrive avec un id) ────────────────────────────────
+
+  editId = signal<number | null>(null);
+  isEditMode = signal(false);
+
+  // ── Stepper ───────────────────────────────────────────────────────────────
 
   step = signal(1);
-  campaignName = 'Ma Super Campagne';
-  sender = 'marketing@freepromailer.io';
-  subject = 'Découvrez nos nouveautés...';
-  bodyContent = 'Bonjour {{first_name}},\n\nLe printemps est la, et avec lui, notre toute nouvelle collection.\n\nDecouvrez nos offres exclusives et beneficiez de remises speciales reservees a votre liste.';
-  templates = this.mailService.templates;
+  steps = STEPS;
+  stepLabel() { return STEPS[this.step() - 1].split('. ')[1]; }
+
+  // ── Champs formulaire ─────────────────────────────────────────────────────
+
+  campaignName  = '';
+  sender        = 'marketing@freepromailer.io';
+  subject       = '';
+  bodyContent   = '';
+
+  // ── Templates & listes ────────────────────────────────────────────────────
+
+  templates       = this.mailService.templates;
   selectedTemplateId = signal<number | null>(null);
   generatedTemplateName = signal<string | null>(null);
-  showTemplatePrompt = signal(false);
-  templatePrompt = signal('');
-  contactLists = signal<ContactList[]>([]);
+  showTemplatePrompt    = signal(false);
+  templatePrompt        = signal('');
+
+  contactLists          = signal<ContactList[]>([]);
   selectedContactListId = signal<number | null>(null);
+
+  // ── Pièces jointes ────────────────────────────────────────────────────────
+
   attachments = signal<File[]>([]);
-  scheduleMode = signal<'now' | 'schedule'>('now');
+  attachmentCount() { return this.attachments().length; }
+
+  // ── Planification ─────────────────────────────────────────────────────────
+
+  scheduleMode  = signal<'now' | 'schedule'>('now');
   scheduledDate = signal('');
   scheduledTime = signal('');
-  generating = signal(false);
+
+  // ── IA ────────────────────────────────────────────────────────────────────
+
+  generating    = signal(false);
   aiSuggestions = signal<string[]>([]);
 
-  steps = STEPS;
-  stepLabel() { return STEPS[this.step()-1].split('. ')[1]; }
-  selectedTemplateName() {
-    return this.templates().find(template => template.id === this.selectedTemplateId())?.name || 'Aucun template';
-  }
-  selectedContactListName() {
-    return this.contactLists().find(list => list.id === this.selectedContactListId())?.name || 'Aucune';
-  }
-  attachmentCount() {
-    return this.attachments().length;
-  }
-  sendModeLabel() {
-    return this.scheduleMode() === 'now' ? 'Envoi immédiat' : 'Envoi planifié';
-  }
-  plannedAtLabel() {
-    if (this.scheduleMode() !== 'schedule') {
-      return 'Maintenant';
-    }
+  // ── État soumission ───────────────────────────────────────────────────────
 
-    const date = this.scheduledDate();
-    const time = this.scheduledTime();
+  saving        = signal(false);
+  starting      = signal(false);
+  errorMsg      = signal<string | null>(null);
+  savedCampaignId = signal<number | null>(null);
 
-    if (!date && !time) {
-      return 'Non défini';
-    }
-
-    if (date && time) {
-      return `${date} ${time}`;
-    }
-
-    return date || time;
-  }
-
-  toolbarIcons = [
-    'M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z',
-    'M19 4l-3 9M10 4l-3 9M3 6h18M3 18h18',
-    'M4 7h16M4 12h16M4 17h16',
-  ];
-
-  constructor(private router: Router) {}
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    this.mailService.loadTemplates();
+
+    // Charger les listes de contacts
     this.contactService.getAllLists().subscribe({
       next: lists => {
         this.contactLists.set(lists);
@@ -89,15 +91,173 @@ export class CampaignEditorComponent {
         }
       },
     });
+
+    // Mode édition : charger la campagne existante
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      const numId = Number(id);
+      this.editId.set(numId);
+      this.isEditMode.set(true);
+      this.campaignApi.getCampaignById(numId).subscribe({
+        next: c => this.patchFromCampaign(c),
+        error: () => this.router.navigate(['/campaigns']),
+      });
+    }
   }
 
-  next() { if (this.step() < 4) this.step.update(v => v+1); else this.router.navigate(['/campaigns']); }
-  prev() { if (this.step() > 1) this.step.update(v => v-1); else this.router.navigate(['/campaigns']); }
+  private patchFromCampaign(c: Campaign): void {
+    this.campaignName  = c.name ?? '';
+    this.sender        = c.sender ?? 'marketing@freepromailer.io';
+    this.subject       = c.subject ?? '';
+    this.bodyContent   = c.body ?? '';
+    if (c.contactListId)  this.selectedContactListId.set(c.contactListId);
+    if (c.templateId)     this.selectedTemplateId.set(c.templateId);
+    if (c.scheduledAt) {
+      const dt = new Date(c.scheduledAt);
+      this.scheduleMode.set('schedule');
+      this.scheduledDate.set(dt.toISOString().slice(0, 10));
+      this.scheduledTime.set(dt.toISOString().slice(11, 16));
+    }
+  }
 
-  generateAI() {
+  // ── Navigation stepper ────────────────────────────────────────────────────
+
+  next() {
+    if (this.step() < 4) {
+      this.step.update(v => v + 1);
+    }
+  }
+
+  prev() {
+    if (this.step() > 1) {
+      this.step.update(v => v - 1);
+    } else {
+      this.router.navigate(['/campaigns']);
+    }
+  }
+
+  // ── Résumé étape 4 ────────────────────────────────────────────────────────
+
+  selectedTemplateName() {
+    return this.templates().find(t => t.id === this.selectedTemplateId())?.name ?? 'Aucun template';
+  }
+
+  selectedContactListName() {
+    return this.contactLists().find(l => l.id === this.selectedContactListId())?.name ?? 'Aucune';
+  }
+
+  sendModeLabel() {
+    return this.scheduleMode() === 'now' ? 'Envoi immédiat' : 'Envoi planifié';
+  }
+
+  plannedAtLabel() {
+    if (this.scheduleMode() !== 'schedule') return 'Maintenant';
+    const d = this.scheduledDate();
+    const t = this.scheduledTime();
+    if (!d && !t) return 'Non défini';
+    return d && t ? `${d} ${t}` : d || t;
+  }
+
+  private buildScheduledAt(): string | null {
+    if (this.scheduleMode() !== 'schedule') return null;
+    const d = this.scheduledDate();
+    const t = this.scheduledTime();
+    if (!d || !t) return null;
+    return `${d}T${t}:00`;
+  }
+
+  // ── Save (brouillon) ──────────────────────────────────────────────────────
+
+  savePlan(): void {
+    this.errorMsg.set(null);
+    this.saving.set(true);
+
+    const payload = {
+      name:          this.campaignName || 'Sans nom',
+      subject:       this.subject || 'Sans objet',
+      sender:        this.sender,
+      body:          this.bodyContent,
+      contactListId: this.selectedContactListId(),
+      templateId:    this.selectedTemplateId(),
+      scheduledAt:   this.buildScheduledAt(),
+      attachments:   this.attachments(),
+    };
+
+    const obs$ = this.isEditMode() && this.editId()
+      ? this.campaignApi.updateCampaign(this.editId()!, payload)
+      : this.campaignApi.createCampaign(payload);
+
+    obs$.subscribe({
+      next: campaign => {
+        this.savedCampaignId.set(campaign.id);
+        this.saving.set(false);
+        this.mailService.loadCampaigns();
+        this.router.navigate(['/campaigns']);
+      },
+      error: err => {
+        this.errorMsg.set(err?.error?.message ?? 'Erreur lors de la sauvegarde');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  // ── Start (créer puis lancer immédiatement) ────────────────────────────────
+
+  startCampaign(): void {
+    this.errorMsg.set(null);
+    this.starting.set(true);
+
+    const payload = {
+      name:          this.campaignName || 'Sans nom',
+      subject:       this.subject || 'Sans objet',
+      sender:        this.sender,
+      body:          this.bodyContent,
+      contactListId: this.selectedContactListId(),
+      templateId:    this.selectedTemplateId(),
+      scheduledAt:   this.buildScheduledAt(),
+      attachments:   this.attachments(),
+    };
+
+    // Si mode édition, mettre à jour d'abord, sinon créer
+    const create$ = this.isEditMode() && this.editId()
+      ? this.campaignApi.updateCampaign(this.editId()!, payload)
+      : this.campaignApi.createCampaign(payload);
+
+    create$.subscribe({
+      next: campaign => {
+        // Lancer immédiatement
+        this.campaignApi.startCampaign(campaign.id).subscribe({
+          next: () => {
+            this.starting.set(false);
+            this.mailService.loadCampaigns();
+            this.router.navigate(['/campaigns']);
+          },
+          error: err => {
+            // Campagne créée mais pas lancée → retourner à la liste
+            this.starting.set(false);
+            this.errorMsg.set(err?.error?.message ?? 'Campagne créée mais impossible de la lancer');
+            this.mailService.loadCampaigns();
+            setTimeout(() => this.router.navigate(['/campaigns']), 2000);
+          },
+        });
+      },
+      error: err => {
+        this.errorMsg.set(err?.error?.message ?? 'Erreur lors de la création');
+        this.starting.set(false);
+      },
+    });
+  }
+
+  // ── IA ────────────────────────────────────────────────────────────────────
+
+  generateAI(): void {
     this.generating.set(true);
     setTimeout(() => {
-      this.aiSuggestions.set(["Boostez vos ventes dès maintenant !", "Une surprise vous attend...", "Ne manquez pas cette offre !"]);
+      this.aiSuggestions.set([
+        'Boostez vos ventes dès maintenant !',
+        'Une surprise vous attend...',
+        'Ne manquez pas cette offre !',
+      ]);
       this.generating.set(false);
     }, 800);
   }
@@ -107,51 +267,39 @@ export class CampaignEditorComponent {
   }
 
   confirmGenerateTemplate(): void {
-    const availableTemplates = this.templates();
-    if (availableTemplates.length === 0) {
+    const available = this.templates();
+    if (available.length === 0) {
       this.generatedTemplateName.set('Aucun template disponible');
       this.selectedTemplateId.set(null);
       return;
     }
-
-    const template = availableTemplates[0];
-    this.selectedTemplateId.set(template.id);
+    const t = available[0];
+    this.selectedTemplateId.set(t.id);
     const prompt = this.templatePrompt().trim();
-    this.generatedTemplateName.set(prompt ? `${template.name} • ${prompt}` : template.name);
+    this.generatedTemplateName.set(prompt ? `${t.name} • ${prompt}` : t.name);
     this.showTemplatePrompt.set(false);
   }
+
+  // ── Pièces jointes ────────────────────────────────────────────────────────
 
   onAttachmentsSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
-
-    if (files.length === 0) {
-      return;
-    }
-
-    this.attachments.update(current => {
-      const merged = [...current, ...files];
-      return merged.filter((file, index, self) =>
-        self.findIndex(item => item.name === file.name && item.size === file.size && item.lastModified === file.lastModified) === index
+    if (!files.length) return;
+    this.attachments.update(curr => {
+      const merged = [...curr, ...files];
+      return merged.filter((f, i, self) =>
+        self.findIndex(x => x.name === f.name && x.size === f.size && x.lastModified === f.lastModified) === i
       );
     });
-
     input.value = '';
   }
 
   removeAttachment(index: number): void {
-    this.attachments.update(current => current.filter((_, currentIndex) => currentIndex !== index));
+    this.attachments.update(curr => curr.filter((_, i) => i !== index));
   }
 
   clearAttachments(): void {
     this.attachments.set([]);
-  }
-
-  savePlan(): void {
-    // Placeholder action for UI flow; backend integration can be wired later.
-  }
-
-  startCampaign(): void {
-    // Placeholder action for UI flow; backend integration can be wired later.
   }
 }

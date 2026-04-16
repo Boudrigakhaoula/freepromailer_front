@@ -11,14 +11,44 @@
   </div>
 
   <!-- Filters -->
-  <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:2rem">
+  <div class="filters-row" style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:2rem">
     @for (f of filters; track f) {
-      <button class="filter-pill" [class.active]="activeFilter()===f" [class.inactive]="activeFilter()!==f" (click)="activeFilter.set(f)">{{f}}</button>
+      <button
+        class="filter-pill"
+        [class.active]="activeFilter()===f"
+        [class.inactive]="activeFilter()!==f"
+        [class.pill-all]="f==='Toutes'"
+        [class.pill-draft]="f==='Brouillon'"
+        [class.pill-progress]="f==='En cours'"
+        [class.pill-done]="f==='Complétée'"
+        [class.pill-paused]="f==='En pause'"
+        [class.pill-failed]="f==='Échouée'"
+        (click)="activeFilter.set(f)">
+        @if (f === 'Toutes') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        }
+        @if (f === 'Brouillon') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        }
+        @if (f === 'En cours') {
+          <svg class="filter-icon-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.28-4.73L23 4"/></svg>
+        }
+        @if (f === 'Complétée') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+        }
+        @if (f === 'En pause') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        }
+        @if (f === 'Échouée') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        }
+        <span>{{f}}</span>
+      </button>
     }
   </div>
 
   <!-- Cards grid -->
-  <div class="grid-3" style="margin-bottom:2rem">
+  <div class="campaigns-grid" style="margin-bottom:2rem">
     @for (c of filteredCampaigns(); track c.id) {
       <div class="campaign-card card" [class.border-failed]="c.status==='FAILED'">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
@@ -41,24 +71,28 @@
           <div class="prog-track" style="margin-bottom:1.5rem"><div class="prog-fill" [style.width]="c.progress+'%'" [style.background]="progressColor(c.status)"></div></div>
 
           <div style="display:flex;gap:.5rem">
-            <button *ngIf="c.status==='IN_PROGRESS'" class="btn btn-secondary" style="flex:1;justify-content:center">
+            <button *ngIf="c.status==='IN_PROGRESS'" class="btn btn-secondary" style="flex:1;justify-content:center;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.25);color:#b45309">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause
             </button>
-            <a *ngIf="c.status==='COMPLETED'" routerLink="/reports" class="btn btn-primary" style="flex:1;justify-content:center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Rapport
+            <a *ngIf="c.status==='COMPLETED'" routerLink="/reports" class="btn btn-primary" style="flex:1;justify-content:center;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-color:rgba(139,92,246,.25)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/></svg> Rapport
             </a>
-            <button *ngIf="c.status==='PAUSED'" class="btn btn-secondary" style="flex:1;justify-content:center">
+            <button *ngIf="c.status==='PAUSED'" class="btn btn-secondary" style="flex:1;justify-content:center;background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.25);color:#1d4ed8">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Reprendre
             </button>
-            <button *ngIf="c.status==='DRAFT'" class="btn btn-primary" style="flex:1;justify-content:center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Continuer
+            <button *ngIf="c.status==='DRAFT'" class="btn btn-primary" style="flex:1;justify-content:center;background:linear-gradient(135deg,#1a73e8,#4f6df5);border-color:rgba(26,115,232,.25)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start
             </button>
-            <button *ngIf="c.status==='FAILED'" class="btn btn-secondary" style="flex:1;justify-content:center">
+            <button *ngIf="c.status==='FAILED'" class="btn btn-secondary" style="flex:1;justify-content:center;background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25);color:#dc2626">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.28-4.73L23 4"/></svg> Réessayer
             </button>
-            <button class="btn btn-secondary btn-icon" (click)="openDelete(c)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" *ngIf="c.status==='DRAFT'"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" *ngIf="c.status!=='DRAFT'"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+
+            <button *ngIf="c.status==='DRAFT'" class="btn btn-secondary btn-icon" routerLink="/campaigns/new" title="Modifier la campagne" style="background:rgba(26,115,232,.1);border-color:rgba(26,115,232,.22);color:#1a73e8">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21l-4 1 1-4Z"/></svg>
+            </button>
+
+            <button class="btn btn-secondary btn-icon" (click)="openDelete(c)" style="background:rgba(185,28,28,.1);border-color:rgba(185,28,28,.22);color:#b91c1c">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
             </button>
           </div>
         </div>

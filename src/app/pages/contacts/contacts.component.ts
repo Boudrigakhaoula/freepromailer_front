@@ -3,14 +3,14 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { CampaignApiService } from '../../core/services/campaign-api.service';
+import { ContactService } from './services/contact.service';
 import {
   ContactList,
   ContactListRequest,
   Contact,
   ContactRequest,
   ImportResult,
-} from '../../core/models/campaign.models';
+} from './models/contact.models';
 
 type View = 'lists' | 'contacts';
 
@@ -22,7 +22,7 @@ type View = 'lists' | 'contacts';
   styleUrls: ['./contacts.component.css'],
 })
 export class ContactsComponent implements OnInit {
-  private api = inject(CampaignApiService);
+  private api = inject(ContactService);
 
   // ─── View state ────────────────────────────────────────────────────────────
   view = signal<View>('lists');
@@ -52,7 +52,8 @@ export class ContactsComponent implements OnInit {
   importLoading = signal(false);
   importResult = signal<ImportResult | null>(null);
   importFile = signal<File | null>(null);
-  importDragOver = signal(false);  currentPage = signal(1);
+  importDragOver = signal(false);
+  currentPage = signal(1);
   readonly pageSize = 200;
   contactForm: ContactRequest = {
     email: '',
@@ -106,7 +107,38 @@ export class ContactsComponent implements OnInit {
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.loadLists();
+    this.refreshData();
+  }
+
+  refreshData(): void {
+    if (this.view() === 'lists') {
+      this.loadLists();
+      return;
+    }
+
+    if (this.showingAllContacts()) {
+      this.loadAllContacts(this.showingAllActive());
+      this.refreshListsInBackground();
+      return;
+    }
+
+    const list = this.selectedList();
+    if (!list) {
+      this.loadLists();
+      return;
+    }
+
+    this.loadContacts(list.id);
+    this.refreshListsInBackground();
+  }
+
+  private refreshListsInBackground(): void {
+    this.api.getAllLists().subscribe({
+      next: lists => this.refreshListStats(lists),
+      error: () => {
+        // Keep current view data even if background list refresh fails.
+      },
+    });
   }
 
   // ─── Lists CRUD ────────────────────────────────────────────────────────────
@@ -191,7 +223,7 @@ export class ContactsComponent implements OnInit {
           this.successMessage.set('Liste modifiee avec succes');
           setTimeout(() => this.successMessage.set(null), 4000);
         }
-        this.loadLists();
+        this.refreshData();
       },
       error: () => { this.error.set('Erreur lors de la sauvegarde.'); this.loading.set(false); },
     });
@@ -201,7 +233,7 @@ export class ContactsComponent implements OnInit {
     const target = this.delListTarget();
     if (!target) return;
     this.api.deleteList(target.id).subscribe({
-      next: () => { this.showListDel.set(false); this.loadLists(); },
+      next: () => { this.showListDel.set(false); this.refreshData(); },
       error: () => this.error.set('Impossible de supprimer cette liste (campagnes actives ?).'),
     });
   }
@@ -332,7 +364,7 @@ export class ContactsComponent implements OnInit {
           this.successMessage.set('Contact modifie avec succes');
           setTimeout(() => this.successMessage.set(null), 4000);
         }
-        this.loadContacts(this.selectedList()!.id);
+        this.refreshData();
       },
       error: (err) => {
         this.error.set(err?.error?.message ?? 'Erreur lors de la sauvegarde du contact.');
@@ -349,7 +381,7 @@ export class ContactsComponent implements OnInit {
         this.showContactDel.set(false);
         this.successMessage.set('Contact supprimé avec succès');
         setTimeout(() => this.successMessage.set(null), 4000);
-        this.loadContacts(this.selectedList()!.id);
+        this.refreshData();
       },
       error: () => this.error.set('Erreur lors de la suppression.'),
     });
@@ -384,7 +416,7 @@ export class ContactsComponent implements OnInit {
       next: result => {
         this.importResult.set(result);
         this.importLoading.set(false);
-        this.loadContacts(list.id);
+        this.refreshData();
       },
       error: () => {
         this.error.set('Erreur lors de l\'import.');

@@ -332,11 +332,11 @@
   <!-- MODAL : Créer / Modifier une Liste                                    -->
   <!-- ══════════════════════════════════════════════════════════════════════ -->
   @if (showListForm()) {
-    <div class="modal-overlay" (click)="showListForm.set(false)">
+    <div class="modal-overlay" (click)="closeListForm()">
       <div class="modal" style="max-width:28rem" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>{{editListTarget() ? 'Modifier la liste' : 'Nouvelle liste'}}</h3>
-          <button class="icon-btn" (click)="showListForm.set(false)">
+          <button class="icon-btn" (click)="closeListForm()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -344,6 +344,9 @@
           <div class="form-group">
             <label class="form-label">Nom de la liste <span style="color:#ba1a1a">*</span></label>
             <input type="text" class="form-input" [(ngModel)]="listForm.name" placeholder="Ex : Clients VIP, Newsletter..." />
+            @if (listFormSubmitted() && !listForm.name.trim()) {
+              <div style="margin-top:.4rem;font-size:.75rem;color:#ba1a1a">Le nom de la liste est obligatoire.</div>
+            }
           </div>
           <div class="form-group">
             <label class="form-label">Description</label>
@@ -351,8 +354,8 @@
           </div>
         </div>
         <div style="display:flex;gap:.75rem;padding:1rem 1.5rem;border-top:1px solid rgba(195,198,215,.1)">
-          <button class="btn btn-ghost" style="flex:1;justify-content:center" (click)="showListForm.set(false)">Annuler</button>
-          <button class="btn btn-primary" style="flex:1;justify-content:center" (click)="saveList()" [disabled]="!listForm.name.trim() || loading()">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center" (click)="closeListForm()">Annuler</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center" (click)="saveList()" [disabled]="loading()">
             {{loading() ? 'Enregistrement...' : (editListTarget() ? 'Enregistrer' : 'Créer la liste')}}
           </button>
         </div>
@@ -385,11 +388,11 @@
   <!-- MODAL : Créer / Modifier un Contact                                   -->
   <!-- ══════════════════════════════════════════════════════════════════════ -->
   @if (showContactForm()) {
-    <div class="modal-overlay" (click)="showContactForm.set(false)">
+    <div class="modal-overlay" (click)="closeContactForm()">
       <div class="modal" style="max-width:32rem" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>{{editContactTarget() ? 'Modifier le Contact' : 'Nouveau Contact'}}</h3>
-          <button class="icon-btn" (click)="showContactForm.set(false)">
+          <button class="icon-btn" (click)="closeContactForm()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -397,6 +400,9 @@
           <div class="form-group">
             <label class="form-label">Email <span style="color:#ba1a1a">*</span></label>
             <input type="email" class="form-input" [(ngModel)]="contactForm.email" placeholder="jean&#64;exemple.com" />
+            @if (contactFormSubmitted() && !contactForm.email.trim()) {
+              <div style="margin-top:.4rem;font-size:.75rem;color:#ba1a1a">L'email est obligatoire.</div>
+            }
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
             <div class="form-group">
@@ -420,8 +426,8 @@
           </div>
         </div>
         <div style="display:flex;gap:.75rem;padding:1rem 1.5rem;border-top:1px solid rgba(195,198,215,.1)">
-          <button class="btn btn-ghost" style="flex:1;justify-content:center" (click)="showContactForm.set(false)">Annuler</button>
-          <button class="btn btn-primary" style="flex:1;justify-content:center" (click)="saveContact()" [disabled]="!contactForm.email.trim() || loading()">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center" (click)="closeContactForm()">Annuler</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center" (click)="saveContact()" [disabled]="loading()">
             {{loading() ? 'Enregistrement...' : (editContactTarget() ? 'Enregistrer' : 'Créer le contact')}}
           </button>
         </div>

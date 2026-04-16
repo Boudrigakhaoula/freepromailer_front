@@ -3,14 +3,14 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ContactService } from './services/contact.service';
+import { ContactService } from '../../core/services/contact.service';
 import {
   ContactList,
   ContactListRequest,
   Contact,
   ContactRequest,
   ImportResult,
-} from './models/contact.models';
+} from '../../core/models/contact.models';
 
 type View = 'lists' | 'contacts';
 
@@ -35,6 +35,7 @@ export class ContactsComponent implements OnInit {
   selectedList = signal<ContactList | null>(null);
   showListForm = signal(false);
   showListDel = signal(false);
+  listFormSubmitted = signal(false);
   editListTarget = signal<ContactList | null>(null);
   delListTarget = signal<ContactList | null>(null);
   listForm: ContactListRequest = { name: '', description: '' };
@@ -43,6 +44,7 @@ export class ContactsComponent implements OnInit {
   contacts = signal<Contact[]>([]);
   showContactForm = signal(false);
   showContactDel = signal(false);
+  contactFormSubmitted = signal(false);
   showImport = signal(false);
   showingAllContacts = signal(false);
   showingAllActive = signal(false);
@@ -192,6 +194,7 @@ export class ContactsComponent implements OnInit {
   openCreateList(): void {
     this.editListTarget.set(null);
     this.listForm = { name: '', description: '' };
+    this.listFormSubmitted.set(false);
     this.showListForm.set(true);
   }
 
@@ -199,7 +202,13 @@ export class ContactsComponent implements OnInit {
     e.stopPropagation();
     this.editListTarget.set(list);
     this.listForm = { name: list.name, description: list.description ?? '' };
+    this.listFormSubmitted.set(false);
     this.showListForm.set(true);
+  }
+
+  closeListForm(): void {
+    this.showListForm.set(false);
+    this.listFormSubmitted.set(false);
   }
 
   openDelList(list: ContactList, e: Event): void {
@@ -209,6 +218,7 @@ export class ContactsComponent implements OnInit {
   }
 
   saveList(): void {
+    this.listFormSubmitted.set(true);
     if (!this.listForm.name.trim()) return;
     this.loading.set(true);
     const target = this.editListTarget();
@@ -218,7 +228,7 @@ export class ContactsComponent implements OnInit {
 
     obs$.subscribe({
       next: () => {
-        this.showListForm.set(false);
+        this.closeListForm();
         if (target) {
           this.successMessage.set('Liste modifiee avec succes');
           setTimeout(() => this.successMessage.set(null), 4000);
@@ -328,6 +338,7 @@ export class ContactsComponent implements OnInit {
     if (!list) return;
     this.editContactTarget.set(null);
     this.contactForm = { email: '', firstName: '', lastName: '', company: '', phone: '', contactListId: list.id };
+    this.contactFormSubmitted.set(false);
     this.showContactForm.set(true);
   }
 
@@ -341,7 +352,13 @@ export class ContactsComponent implements OnInit {
       phone: c.phone ?? '',
       contactListId: c.contactListId ?? this.selectedList()!.id,
     };
+    this.contactFormSubmitted.set(false);
     this.showContactForm.set(true);
+  }
+
+  closeContactForm(): void {
+    this.showContactForm.set(false);
+    this.contactFormSubmitted.set(false);
   }
 
   openDelContact(c: Contact): void {
@@ -350,6 +367,7 @@ export class ContactsComponent implements OnInit {
   }
 
   saveContact(): void {
+    this.contactFormSubmitted.set(true);
     if (!this.contactForm.email.trim()) return;
     this.loading.set(true);
     const target = this.editContactTarget();
@@ -359,7 +377,7 @@ export class ContactsComponent implements OnInit {
 
     obs$.subscribe({
       next: () => {
-        this.showContactForm.set(false);
+        this.closeContactForm();
         if (target) {
           this.successMessage.set('Contact modifie avec succes');
           setTimeout(() => this.successMessage.set(null), 4000);

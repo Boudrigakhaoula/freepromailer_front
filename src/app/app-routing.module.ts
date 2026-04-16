@@ -41,8 +41,8 @@ const routes: Routes = [
       },
       {
         path: 'contacts',
-        loadChildren: () =>
-          import('./pages/contacts/contacts.module').then((m) => m.ContactsModule),
+        loadComponent: () =>
+          import('./pages/contacts/contacts.component').then((m) => m.ContactsComponent),
       },
       {
         path: 'templates',
